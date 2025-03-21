@@ -1,103 +1,232 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "sonner";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [locatorName, setLocatorName] = useState("");
+  const [locator, setLocator] = useState("");
+  const [locatorType, setLocatorType] = useState("By Id");
+  const [locators, setLocators] = useState([]);
+  const [editIndex, setEditIndex] = useState(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    const storedLocators = JSON.parse(localStorage.getItem("locators")) || [];
+    setLocators(storedLocators);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("locators", JSON.stringify(locators));
+  }, [locators]);
+
+  const handleAdd = (e) => {
+    e.preventDefault();
+    if (!locatorName || !locator) {
+      toast.error("Please enter both locator name and value!");
+      return;
+    }
+
+    const newLocator = { locatorName, locator, locatorType };
+    if (editIndex !== null) {
+      const updatedLocators = [...locators];
+      updatedLocators[editIndex] = newLocator;
+      setLocators(updatedLocators);
+      setEditIndex(null);
+      toast.success("Locator updated successfully!");
+    } else {
+      setLocators([...locators, newLocator]);
+      toast.success("Locator added successfully!");
+    }
+
+    setLocatorName("");
+    setLocator("");
+    setLocatorType("By Id");
+  };
+
+  const handleDelete = (index) => {
+    setLocators(locators.filter((_, i) => i !== index));
+    toast.success("Locator deleted!");
+  };
+
+  const handleEdit = (index) => {
+    const locatorToEdit = locators[index];
+    setLocatorName(locatorToEdit.locatorName);
+    setLocator(locatorToEdit.locator);
+    setLocatorType(locatorToEdit.locatorType);
+    setEditIndex(index);
+  };
+
+  const handleCopyAll = () => {
+    const textToCopy = locators
+      .map(
+        (loc) =>
+          `private readonly By ${toCamelCase(
+            loc.locatorName
+          )} = By.${convertLocatorType(loc.locatorType)}("${loc.locator}");`
+      )
+      .join("\n");
+
+    navigator.clipboard.writeText(textToCopy);
+    toast.success("All locators copied!");
+  };
+
+  const handleCopySingle = (loc) => {
+    const textToCopy = `private readonly By ${toCamelCase(
+      loc.locatorName
+    )} = By.${convertLocatorType(loc.locatorType)}("${loc.locator}");`;
+
+    navigator.clipboard.writeText(textToCopy);
+    toast.success(`Copied: ${toCamelCase(loc.locatorName)}`);
+  };
+
+  const handleDeleteAll = () => {
+    setLocators([]);
+    toast.success("All locators deleted!");
+  };
+
+  const convertLocatorType = (type) => {
+    switch (type) {
+      case "By Id":
+        return "Id";
+      case "By className":
+        return "ClassName";
+      case "By Normal XPath":
+      case "By XPath Text":
+        return "XPath";
+      case "By Css Selector":
+        return "CssSelector";
+      default:
+        return "XPath";
+    }
+  };
+
+  const toCamelCase = (str) => {
+    return str
+      .split(" ")
+      .map((word, index) =>
+        index === 0
+          ? word.toLowerCase()
+          : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      )
+      .join("");
+  };
+
+  return (
+    <div className="container min-h-screen mx-auto pt-5 flex flex-col items-center">
+      <Card className="max-w-xl w-full p-6 shadow-lg rounded-lg border border-gray-300 bg-white">
+        <CardContent>
+          <h2 className="text-2xl font-bold mb-4 text-center">
+            Add XPath Locator
+          </h2>
+          <form className="space-y-3" onSubmit={handleAdd}>
+            <div>
+              <Label className="text-sm font-semibold">Enter XPath Name</Label>
+              <Input
+                type="text"
+                placeholder="Enter XPath locator name"
+                value={locatorName}
+                onChange={(e) => setLocatorName(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label className="text-sm font-semibold">Enter XPath</Label>
+              <Input
+                type="text"
+                placeholder="Enter XPath"
+                value={locator}
+                onChange={(e) => setLocator(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label className="text-sm font-semibold">Select XPath Type</Label>
+              <select
+                value={locatorType}
+                onChange={(e) => setLocatorType(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              >
+                <option>By Id</option>
+                <option>By className</option>
+                <option>By Normal XPath</option>
+                <option>By XPath Text</option>
+                <option>By Css Selector</option>
+              </select>
+            </div>
+
+            <div className="flex justify-between mt-4">
+              <Button type="submit">
+                {editIndex !== null ? "Update" : "Add"}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setLocatorName("");
+                  setLocator("");
+                  setLocatorType("By Id");
+                  setEditIndex(null);
+                }}
+              >
+                Clear
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      {locators.length > 0 && (
+        <div className="mt-6 w-full max-w-5xl">
+          <div className="flex justify-end mb-3 gap-2">
+            <Button variant="destructive" onClick={handleDeleteAll}>
+              Delete All
+            </Button>
+            <Button onClick={handleCopyAll}>Copy All</Button>
+          </div>
+          <div className="overflow-x-auto shadow-lg rounded-lg border border-gray-200">
+            <table className="w-full bg-white border-collapse">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="border p-2">Locator Name</th>
+                  <th className="border p-2">Locator</th>
+                  <th className="border p-2">Type</th>
+                  <th className="border p-2 w-40">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {locators.map((loc, index) => (
+                  <tr key={index} className="border hover:bg-gray-100">
+                    <td className="border p-2">{loc.locatorName}</td>
+                    <td className="border p-2">{loc.locator}</td>
+                    <td className="border p-2">{loc.locatorType}</td>
+                    <td className="border p-2 w-40">
+                      <div className="flex justify-center gap-2">
+                        <Button size="sm" onClick={() => handleEdit(index)}>
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDelete(index)}
+                        >
+                          Delete
+                        </Button>
+                        <Button size="sm" onClick={() => handleCopySingle(loc)}>
+                          Copy
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      )}
     </div>
   );
 }
