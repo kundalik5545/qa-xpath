@@ -95,27 +95,48 @@ export default function Home() {
         return "Id";
       case "By className":
         return "ClassName";
-      case "By Normal XPath":
-      case "By XPath Text":
+      case "By XPath":
         return "XPath";
       case "By Css Selector":
         return "CssSelector";
+      case "By Link Text":
+        return "LinkText";
+      case "By Partial Link Text":
+        return "PartialLinkText";
+      case "By Tag Name":
+        return "TagName";
+      case "By Name":
+        return "Name";
       default:
         return "XPath";
     }
   };
 
-  const toCamelCase = (str) => {
-    return str
-      .split(" ")
-      .map((word, index) =>
-        index === 0
-          ? word.toLowerCase()
-          : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-      )
-      .join("");
-  };
+  // const toCamelCase = (str) => {
+  //   return str
+  //     .split(" ")
+  //     .map((word, index) =>
+  //       index === 0
+  //         ? word.toLowerCase()
+  //         : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+  //     )
+  //     .join("");
+  // };
 
+  const toCamelCase = (str) => {
+    let words = str.split(" ");
+    return (
+      words[0].charAt(0).toUpperCase() +
+      words[0].slice(1).toLowerCase() +
+      "_" +
+      words
+        .slice(1)
+        .map(
+          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        )
+        .join("")
+    );
+  };
   return (
     <div
       className="container min-h-screen mx-auto pt-5 flex flex-col items-center"
@@ -163,9 +184,12 @@ export default function Home() {
               >
                 <option>By Id</option>
                 <option>By className</option>
-                <option>By Normal XPath</option>
-                <option>By XPath Text</option>
+                <option>By XPath</option>
                 <option>By Css Selector</option>
+                <option>By Link Text</option>
+                <option>By Partial Link Text</option>
+                <option>By Tag Name</option>
+                <option>By Name</option>
               </select>
             </div>
 

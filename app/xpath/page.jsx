@@ -1,23 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import Link from "next/link";
+import { Input } from "@/components/ui/input";
 
 export default function XPathConverter() {
   const [inputText, setInputText] = useState("");
+  const [pageObject, setPageObject] = useState("");
   const [methods, setMethods] = useState([]);
 
+  useEffect(() => {
+    if (!pageObject.trim()) {
+      setMethods([]); // Clear methods if pageObject is empty
+    }
+  }, [pageObject]);
+
   const parseLocators = () => {
+    if (!pageObject.trim()) {
+      toast.error("Please enter a page object return type.");
+      return;
+    }
+
     if (!inputText.trim()) {
       toast.error("Please enter XPath locators.");
       return;
     }
 
     const regex = /private readonly By\s+(\w+)\s*=\s*By\.(\w+)\("([^"]+)"\);/g;
-
     const matches = [...inputText.matchAll(regex)];
 
     if (matches.length === 0) {
@@ -27,7 +39,7 @@ export default function XPathConverter() {
 
     const generatedMethods = matches.map(
       ([_, locatorName, locatorType, locatorValue]) => {
-        const actionType = detectAction(locatorName); // Determine action type
+        const actionType = detectAction(locatorName);
         return {
           locatorName,
           locatorType,
@@ -41,7 +53,6 @@ export default function XPathConverter() {
     toast.success("Methods generated successfully!");
   };
 
-  // Function to determine action type based on locator name
   const detectAction = (locatorName) => {
     if (
       locatorName.toLowerCase().includes("button") ||
@@ -58,33 +69,36 @@ export default function XPathConverter() {
     }
   };
 
-  // Generate appropriate Selenium methods
   const generateSeleniumMethod = (locatorName, actionType) => {
     const capitalizedLocator = capitalize(locatorName);
+    const seleniumLocator = locatorName;
+
     if (actionType === "click") {
       return `
-    public PageObject Click${capitalizedLocator}() {
-        IWebElement el = shortWait.Until(ElementIsClickable(${locatorName}));
+    public ${pageObject} ClickOn_${capitalizedLocator}() {
+        IWebElement el = shortWait.Until(ElementToBeClickable(${seleniumLocator}));
         el.Click();
         return this;
     }
     `;
     } else if (actionType === "sendKeys") {
       return `
-    public PageObject EnterTextIn${capitalizedLocator}(string text) {
-        IWebElement el = shortWait.Until(ElementIsVisible(${locatorName}));
+    public ${pageObject} EnterTextIn_${capitalizedLocator}(string text) {
+        IWebElement el = shortWait.Until(ElementIsVisible(${seleniumLocator}));
         el.Clear();
         el.SendKeys(text);
         return this;
     }
     `;
-    } else {
+    } else if (actionType === "getText") {
       return `
-    public string GetTextFrom${capitalizedLocator}() {
-        IWebElement el = shortWait.Until(ElementIsVisible(${locatorName}));
+    public string GetTextOf_${capitalizedLocator}() {
+        IWebElement el = shortWait.Until(ElementIsVisible(${seleniumLocator}));
         return el.Text;
     }
     `;
+    } else {
+      return `// Action type '${actionType}' is not supported.`;
     }
   };
 
@@ -103,6 +117,18 @@ export default function XPathConverter() {
         onChange={(e) => setInputText(e.target.value)}
         className="w-full border border-gray-300 rounded-md p-2"
       />
+
+      <div className="flex gap-1 pt-3">
+        <Input
+          name="PageObject"
+          id="PageObject"
+          type="text"
+          className="w-[200px]"
+          placeholder="Return Page Object Name"
+          value={pageObject}
+          onChange={(e) => setPageObject(e.target.value)}
+        />
+      </div>
 
       <div className="flex justify-center gap-4 mt-4">
         <Button onClick={parseLocators}>Convert</Button>
