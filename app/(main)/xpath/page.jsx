@@ -139,36 +139,37 @@ export default function XPathConverter() {
   const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 flex flex-col items-center">
       <h2 className="text-2xl font-bold mb-4 text-center">
         <Link href="/test-case">XPath to Selenium Method Converter</Link>
       </h2>
 
-      <Textarea
-        rows="6"
-        placeholder="Paste XPath locators here..."
-        value={inputText}
-        onChange={(e) => setInputText(e.target.value)}
-        className="w-full border border-gray-300 rounded-md p-2"
-      />
-
-      <div className="flex gap-1 pt-3">
-        <Input
-          name="PageObject"
-          id="PageObject"
-          type="text"
-          className="w-[200px]"
-          placeholder="Return Page Object Name"
-          value={pageObject}
-          onChange={(e) => setPageObject(e.target.value)}
+      <div className="container mx-auto  flex flex-col items-start">
+        <Textarea
+          rows="6"
+          placeholder="Paste XPath locators here..."
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          className="w-full border border-gray-300 rounded-md p-2 max-w-3xl items-center"
         />
-      </div>
 
-      <div className="flex justify-center gap-4 mt-4">
-        <Button onClick={parseLocators}>Convert</Button>
-        <Button variant="destructive" onClick={() => setMethods([])}>
-          Clear
-        </Button>
+        <div className="flex items-center pt-5 gap-3">
+          <Input
+            name="PageObject"
+            id="PageObject"
+            type="text"
+            className="w-[200px]"
+            placeholder="Return Page Object Name"
+            value={pageObject}
+            onChange={(e) => setPageObject(e.target.value)}
+          />
+          <div className="flex justify-center gap-2">
+            <Button onClick={parseLocators}>Convert</Button>
+            <Button variant="destructive" onClick={() => setMethods([])}>
+              Clear
+            </Button>
+          </div>
+        </div>
       </div>
 
       {methods.length > 0 && (

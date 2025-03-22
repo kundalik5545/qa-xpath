@@ -21,6 +21,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import Link from "next/link";
+import Image from "next/image";
 
 // Menu items.
 const items = [
@@ -66,7 +68,10 @@ export function AppSidebar() {
                 isCollapsed ? "hidden" : "block"
               }`}
             >
-              Application
+              <Link href="/" className="flex gap-2">
+                <Image src="logo.svg" width={30} height={30} /> <span></span>
+                QA XPath
+              </Link>
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
