@@ -53,20 +53,54 @@ export default function XPathConverter() {
     toast.success("Methods generated successfully!");
   };
 
+  //un optimised code
+  // detectAction = (locatorName) => {
+  //   if (
+  //     locatorName.toLowerCase().includes("button") ||
+  //     locatorName.toLowerCase().includes("click") ||
+  //     locatorName.toLowerCase().includes("add") ||
+  //     locatorName.toLowerCase().includes("save") ||
+  //     locatorName.toLowerCase().includes("edit") ||
+  //     locatorName.toLowerCase().includes("delete") ||
+  //     locatorName.toLowerCase().includes("select") ||
+  //     locatorName.toLowerCase().includes("link")
+  //   ) {
+  //     return "click";
+  //   } else if (
+  //     locatorName.toLowerCase().includes("input") ||
+  //     locatorName.toLowerCase().includes("field") ||
+  //     locatorName.toLowerCase().includes("date")
+  //   ) {
+  //     return "sendKeys";
+  //   } else {
+  //     return "getText";
+  //   }
+  // };
+
   const detectAction = (locatorName) => {
-    if (
-      locatorName.toLowerCase().includes("button") ||
-      locatorName.toLowerCase().includes("click")
-    ) {
+    const clickActions = new Set([
+      "button",
+      "click",
+      "add",
+      "save",
+      "edit",
+      "delete",
+      "select",
+      "link",
+      "navigate",
+    ]);
+    const inputActions = new Set(["input", "field", "date"]);
+
+    const lowerCaseLocator = locatorName.toLowerCase();
+
+    if ([...clickActions].some((action) => lowerCaseLocator.includes(action))) {
       return "click";
-    } else if (
-      locatorName.toLowerCase().includes("input") ||
-      locatorName.toLowerCase().includes("field")
-    ) {
-      return "sendKeys";
-    } else {
-      return "getText";
     }
+    if ([...inputActions].some((action) => lowerCaseLocator.includes(action))) {
+      return "sendKeys";
+    }
+
+    return "getText";
   };
 
   const generateSeleniumMethod = (locatorName, actionType) => {
@@ -139,9 +173,24 @@ export default function XPathConverter() {
 
       {methods.length > 0 && (
         <div className="mt-6">
-          <h3 className="text-xl font-semibold mb-3">
-            Generated Selenium Methods:
-          </h3>
+          <div className="flex justify-between items-center">
+            <h3 className="text-xl font-semibold mb-3">
+              Generated Selenium Methods:
+            </h3>
+            <Button
+              size="sm"
+              className="bg-blue-500 text-white"
+              onClick={() => {
+                const allMethods = methods
+                  .map((method) => method.methodCode)
+                  .join("\n\n");
+                navigator.clipboard.writeText(allMethods);
+                toast.success("All methods copied!");
+              }}
+            >
+              Copy All Methods
+            </Button>
+          </div>
           <div className="overflow-x-auto border rounded-lg">
             <table className="w-full bg-white border-collapse">
               <thead>
