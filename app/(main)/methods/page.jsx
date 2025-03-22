@@ -77,7 +77,7 @@ export default function MethodPage() {
       <Card className="max-w-xl w-full p-6 shadow-lg rounded-lg border border-gray-300 bg-white">
         <CardContent>
           <h2 className="text-2xl font-bold mb-4 text-center">
-            <Link href="/xpath">Add XPath Locator</Link>
+            <Link href="/test-case">Add XPath Locator</Link>
           </h2>
           <form className="space-y-3" onSubmit={handleAdd}>
             <div>

@@ -141,7 +141,7 @@ export default function XPathConverter() {
   return (
     <div className="container mx-auto p-6">
       <h2 className="text-2xl font-bold mb-4 text-center">
-        <Link href="/">XPath to Selenium Method Converter</Link>
+        <Link href="/test-case">XPath to Selenium Method Converter</Link>
       </h2>
 
       <Textarea

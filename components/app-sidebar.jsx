@@ -8,6 +8,7 @@ import {
   Settings,
   Menu,
   ChevronLeft,
+  Chrome,
 } from "lucide-react";
 
 import {
@@ -26,6 +27,7 @@ const items = [
   { title: "Home", url: "/", icon: Home },
   { title: "Locators", url: "/locators", icon: CodeXml },
   { title: "XPath Methods", url: "/xpath", icon: FileCode },
+  { title: "Test Cases", url: "/test-case", icon: Chrome },
   { title: "Get Data", url: "/get-data", icon: Database },
   { title: "Settings", url: "#", icon: Settings },
 ];
