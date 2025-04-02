@@ -49,7 +49,7 @@ export default function TestCaseGenerator() {
   const generateCode = useCallback(() => {
     const { testCaseName, getData, objectName, object, methods } = formData;
 
-    if (!testCaseName || !getData || !object || !objectName || !methods) {
+    if (!testCaseName || !getData || !object || !objectName) {
       toast.error("All fields are required!");
       return;
     }

@@ -31,7 +31,7 @@ const items = [
   { title: "XPath Methods", url: "/xpath", icon: FileCode },
   { title: "Test Cases", url: "/test-case", icon: Chrome },
   { title: "Get Data", url: "/get-data", icon: Database },
-  { title: "Settings", url: "#", icon: Settings },
+  { title: "Settings", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
