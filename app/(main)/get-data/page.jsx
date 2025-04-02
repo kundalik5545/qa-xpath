@@ -39,7 +39,7 @@ const TestDataExtractor = () => {
     string fileLocation = GetFilePath(folderName, fileName);
 
     var testData = JsonFileReader(fileLocation);
-    var testCases = testData["testCases"];
+    var testCases = testData[testCaseName];
 
     foreach(var testCase in testCases!)
     {

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,71 +9,88 @@ import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 
 export default function TestCaseGenerator() {
-  const [formData, setFormData] = useState({
+  const defaultFormData = {
     testCaseName: "",
     getData: "",
-    objectName: "",
-    object: "",
+    object: "Login_Page",
+    objectName: "loginPage",
     methods: "",
-  });
+  };
+
+  const [formData, setFormData] = useState(defaultFormData);
   const [generatedCode, setGeneratedCode] = useState("");
 
+  // Load saved data from localStorage on first render
   useEffect(() => {
-    const savedData = JSON.parse(localStorage.getItem("testCaseData"));
-    if (savedData) {
-      setFormData(savedData);
-      setGeneratedCode(savedData.generatedCode);
+    try {
+      const savedData = JSON.parse(localStorage.getItem("testCaseData"));
+      if (savedData) {
+        setFormData(savedData);
+        setGeneratedCode(savedData.generatedCode || "");
+      }
+    } catch (error) {
+      console.error("Error loading test case data:", error);
     }
   }, []);
 
-  const handleChange = (e) => {
+  // Save data to localStorage whenever formData changes
+  useEffect(() => {
+    localStorage.setItem(
+      "testCaseData",
+      JSON.stringify({ ...formData, generatedCode })
+    );
+  }, [formData, generatedCode]);
+
+  const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  const generateCode = () => {
+  const generateCode = useCallback(() => {
     const { testCaseName, getData, objectName, object, methods } = formData;
+
+    if (!testCaseName || !getData || !object || !objectName || !methods) {
+      toast.error("All fields are required!");
+      return;
+    }
+
+    const formattedMethods = methods
+      .split("\n")
+      .filter(Boolean) // Remove empty lines
+      .map((method) => (method.includes("(") ? `.${method}` : `.${method}()`))
+      .join("\n        ");
+
     const code = `
 [TestCaseSource(nameof(GetData${getData}), new object [] {"${testCaseName}"})]
 [Test]
 public void ${testCaseName}(string userName, string password, string memorableWord)
 {
     ${objectName} = new ${object}(GetDriver());
-    
+
+    LogDetails("Login to eMember.");
+
     ${objectName}!
-${methods
-  .split("\n")
-  .map((method) => (method.includes("(") ? `.${method}` : `.${method}()`))
-  .join("\n        ")};
+        ${formattedMethods}
 
     // Assert statement
 }
     `;
 
     setGeneratedCode(code);
-    localStorage.setItem(
-      "testCaseData",
-      JSON.stringify({ ...formData, generatedCode: code })
-    );
-  };
+    toast.success("Test case generated successfully!");
+  }, [formData]);
 
-  const copyToClipboard = () => {
+  const copyToClipboard = useCallback(() => {
     navigator.clipboard.writeText(generatedCode);
-    toast.success("Test Case copied!");
-  };
+    toast.success("Test Case copied to clipboard!");
+  }, [generatedCode]);
 
-  const clearForm = () => {
-    setFormData({
-      testCaseName: "",
-      getData: "",
-      objectName: "",
-      object: "",
-      methods: "",
-    });
+  const clearForm = useCallback(() => {
+    setFormData(defaultFormData);
     setGeneratedCode("");
     localStorage.removeItem("testCaseData");
-    toast.warning("Test Case deleted!");
-  };
+    toast.warning("Test case cleared!");
+  }, []);
 
   return (
     <div className="container min-h-screen mx-auto p-5 flex flex-col items-center">
@@ -83,6 +100,7 @@ ${methods
           <h2 className="text-2xl font-bold text-center">
             <Link href="/get-data">Test Case Generator</Link>
           </h2>
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
             <Label>Test Case Name</Label>
             <Input
@@ -103,21 +121,21 @@ ${methods
               className="sm:col-span-2"
             />
 
-            <Label>Object Name</Label>
-            <Input
-              name="objectName"
-              value={formData.objectName}
-              onChange={handleChange}
-              placeholder="e.g., loginPage"
-              className="sm:col-span-2"
-            />
-
             <Label>Object</Label>
             <Input
               name="object"
               value={formData.object}
               onChange={handleChange}
               placeholder="e.g., Login_Page"
+              className="sm:col-span-2"
+            />
+
+            <Label>Object Name</Label>
+            <Input
+              name="objectName"
+              value={formData.objectName}
+              onChange={handleChange}
+              placeholder="e.g., loginPage"
               className="sm:col-span-2"
             />
 
@@ -160,7 +178,7 @@ ${methods
                       {generatedCode}
                     </pre>
                   </td>
-                  <td className="grid grid-cols-1  p-2 space-y-2 text-center">
+                  <td className="grid grid-cols-1 p-2 space-y-2 text-center">
                     <Button size="sm" onClick={copyToClipboard}>
                       Copy
                     </Button>

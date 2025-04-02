@@ -85,11 +85,11 @@ export default function XPathConverter() {
       "save",
       "edit",
       "delete",
-      "select",
       "link",
       "navigate",
     ]);
-    const inputActions = new Set(["input", "field", "date"]);
+
+    const inputActions = new Set(["input", "field", "date", "select"]);
 
     const lowerCaseLocator = locatorName.toLowerCase();
 
@@ -99,7 +99,6 @@ export default function XPathConverter() {
     if ([...inputActions].some((action) => lowerCaseLocator.includes(action))) {
       return "sendKeys";
     }
-
     return "getText";
   };
 

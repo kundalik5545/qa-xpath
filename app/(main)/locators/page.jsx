@@ -126,7 +126,7 @@ export default function LocatorsPage() {
   const toCamelCase = (str) => {
     let words = str.split(" ");
     return (
-      words[0].charAt(0).toUpperCase() +
+      words[0].charAt(0).toLowerCase() +
       words[0].slice(1).toLowerCase() +
       "_" +
       words
