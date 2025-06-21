@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
@@ -30,18 +29,6 @@ const SettingsPage = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setSettings((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setSettings((prev) => ({ ...prev, snippet: event.target.result }));
-      };
-      reader.readAsText(file);
-      toast.success("Snippet imported successfully!");
-    }
   };
 
   const saveSettings = () => {
@@ -81,16 +68,6 @@ const SettingsPage = () => {
               <option value="light">Light</option>
               <option value="dark">Dark</option>
             </select>
-
-            <Label>Snippet Import</Label>
-            <Input type="file" accept=".txt,.js" onChange={handleFileUpload} />
-
-            {settings.snippet && (
-              <div>
-                <Label>Imported Snippet</Label>
-                <Textarea value={settings.snippet} readOnly className="h-32" />
-              </div>
-            )}
           </div>
 
           <div className="flex justify-end gap-2">

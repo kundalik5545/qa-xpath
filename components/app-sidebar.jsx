@@ -9,6 +9,7 @@ import {
   Menu,
   ChevronLeft,
   Chrome,
+  MessageCircle,
 } from "lucide-react";
 
 import {
@@ -31,6 +32,7 @@ const items = [
   { title: "XPath Methods", url: "/xpath", icon: FileCode },
   { title: "Test Cases", url: "/test-case", icon: Chrome },
   { title: "Get Data", url: "/get-data", icon: Database },
+  { title: "Azure Comments", url: "/azure-comments", icon: MessageCircle },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
