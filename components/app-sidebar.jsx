@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import {
   Home,
@@ -8,8 +9,9 @@ import {
   Settings,
   Menu,
   ChevronLeft,
-  Chrome,
+  Monitor,
   MessageCircle,
+  GitCompare,
 } from "lucide-react";
 
 import {
@@ -22,25 +24,34 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 // Menu items.
 const items = [
   { title: "Home", url: "/", icon: Home },
   { title: "Locators", url: "/locators", icon: CodeXml },
   { title: "XPath Methods", url: "/xpath", icon: FileCode },
-  { title: "Test Cases", url: "/test-case", icon: Chrome },
+  { title: "Test Cases", url: "/test-case", icon: Monitor },
   { title: "Get Data", url: "/get-data", icon: Database },
   { title: "Azure Comments", url: "/azure-comments", icon: MessageCircle },
+  { title: "String Compare", url: "/string-match", icon: GitCompare },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const pathname = usePathname();
 
-  // Detect screen size and set mobile state
+  const [isMobile, setIsMobile] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
@@ -58,40 +69,52 @@ export function AppSidebar() {
     <div className="relative flex h-screen">
       {/* Sidebar */}
       <Sidebar
-        className={`h-full bg-gray-900 text-white transition-all duration-300 shadow-lg ${
+        className={`relative z-30 h-full bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white transition-all duration-300 shadow-2xl ${
           isCollapsed ? "w-16" : "w-64"
         }`}
       >
         <SidebarContent>
-          {/* Sidebar Header */}
           <SidebarGroup>
             <SidebarGroupLabel
-              className={`text-lg font-semibold px-4 py-3 transition pb-10 ${
-                isCollapsed ? "hidden" : "block"
+              className={`text-xl font-bold px-4 py-6 transition-all duration-300 flex items-center gap-2 ${
+                isCollapsed ? "justify-center" : ""
               }`}
             >
-              <Link href="/" className="flex gap-2">
-                <Image src="logo.svg" width={30} height={30} /> <span></span>
-                QA XPath
+              <Link href="/" className="flex gap-2 items-center">
+                <Image src="/logo.svg" width={32} height={32} alt="Logo" />
+                {!isCollapsed && <span>QA XPath</span>}
               </Link>
             </SidebarGroupLabel>
+
             <SidebarGroupContent>
               <SidebarMenu>
-                {items.map(({ title, url, icon: Icon }) => (
-                  <SidebarMenuItem key={title} className="p-1 ">
-                    <SidebarMenuButton asChild>
-                      <a
-                        href={url}
-                        className="flex items-center space-x-3 px-4 py-1 text-black hover:bg-gray-800 rounded-md transition"
-                      >
-                        <Icon size={40} /> {/* Increased icon size */}
-                        {!isCollapsed && (
-                          <span className="text-sm">{title}</span>
-                        )}
-                      </a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {items.map(({ title, url, icon: Icon }) => {
+                  const isActive = pathname === url;
+                  return (
+                    <SidebarMenuItem key={title} className="p-1">
+                      <SidebarMenuButton asChild>
+                        <Link
+                          href={url}
+                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-200 hover:bg-blue-500
+                            ${
+                              isActive
+                                ? "bg-blue-600 text-white shadow  "
+                                : "text-gray-700  "
+                            }
+                            ${isCollapsed ? "justify-center px-2" : ""}
+                          `}
+                        >
+                          <Icon size={24} strokeWidth={2.2} />
+                          {!isCollapsed && (
+                            <span className="text-base font-medium whitespace-nowrap">
+                              {title}
+                            </span>
+                          )}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -100,16 +123,17 @@ export function AppSidebar() {
         {/* Toggle Button */}
         <button
           onClick={toggleSidebar}
-          className="absolute top-4 right-0 p-2 bg-gray-800 text-white rounded-full transform translate-x-1/2 hover:bg-gray-700 transition"
+          className="absolute top-4 right-0 p-2 bg-gray-800 text-white rounded-full transform translate-x-1/2 hover:bg-blue-600 transition z-40"
+          aria-label="Toggle sidebar"
         >
-          {isCollapsed ? <Menu size={24} /> : <ChevronLeft size={24} />}
+          {isCollapsed ? <Menu size={22} /> : <ChevronLeft size={22} />}
         </button>
       </Sidebar>
 
-      {/* Overlay for mobile (opens menu on small screens) */}
+      {/* Overlay for mobile */}
       {isMobile && !isCollapsed && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-10"
+          className="fixed inset-0 bg-black bg-opacity-50 z-20"
           onClick={toggleSidebar}
         />
       )}

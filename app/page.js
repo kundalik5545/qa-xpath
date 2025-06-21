@@ -60,7 +60,7 @@ const sections = [
 
 const HomePage = () => {
   return (
-    <div className="max-w-6xl">
+    <div className="max-w-4xl mx-auto">
       <HeroSection />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">

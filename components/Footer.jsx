@@ -3,7 +3,7 @@ import Link from "next/link";
 
 const Footer = () => {
   return (
-    <div className="flex flex-col items-center container mx-auto">
+    <div className="flex flex-col items-center">
       {/* Info sect */}
       <div className="flex flex-col items-center">
         <p className="text-xl font-semibold">QA XPath by Random Coders</p>
