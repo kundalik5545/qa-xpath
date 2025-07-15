@@ -37,6 +37,11 @@ const items = [
   { title: "Test Cases", url: "/test-case", icon: Monitor },
   { title: "Get Data", url: "/get-data", icon: Database },
   { title: "Azure Comments", url: "/azure-comments", icon: MessageCircle },
+  {
+    title: "Test Upload",
+    url: "/test-generator-upload-file",
+    icon: MessageCircle,
+  },
   { title: "Test Generator", url: "/test-generator", icon: CodeXml },
   {
     title: "Test Case Report",

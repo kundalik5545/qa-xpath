@@ -9,6 +9,8 @@ import {
   FileText,
   FileSpreadsheet,
   Camera,
+  CircleArrowUp,
+  FileChartColumnIncreasing,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -110,40 +112,6 @@ const TestCaseGenerator = () => {
   const removeTestCase = (id) => {
     setTestCases((prev) => prev.filter((tc) => tc.id !== id));
   };
-
-  //   const exportToWord = () => {
-  //     if (testCases.length === 0) {
-  //       alert("No test cases to export");
-  //       return;
-  //     }
-
-  //     let htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Test Case Report</title></head><body>`;
-  //     htmlContent += `<h1>Test Case Execution Report</h1><p>Generated: ${new Date().toLocaleString()}</p>`;
-  //     testCases.forEach((tc, idx) => {
-  //       htmlContent += `<div><h2>${idx + 1}. ${
-  //         tc.name
-  //       }</h2><p>Status: ${tc.status.toUpperCase()}</p><p>Date: ${
-  //         tc.executionDate
-  //       }</p><p>Added: ${tc.timestamp}</p>`;
-  //       if (tc.screenshot) {
-  //         htmlContent += `<img src="${tc.screenshot}" style="max-width:100%; height:auto;" />`;
-  //       }
-  //       htmlContent += `</div><hr/>`;
-  //     });
-  //     htmlContent += `</body></html>`;
-
-  //     const blob = new Blob([htmlContent], {
-  //       type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  //     });
-  //     const url = URL.createObjectURL(blob);
-  //     const a = document.createElement("a");
-  //     a.href = url;
-  //     a.download = `Test-Case-Report-${
-  //       new Date().toISOString().split("T")[0]
-  //     }.doc`;
-  //     a.click();
-  //     URL.revokeObjectURL(url);
-  //   };
 
   const exportToWord = () => {
     if (testCases.length === 0) {
@@ -444,7 +412,7 @@ const TestCaseGenerator = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6 bg-white shadow rounded-lg">
+    <div className="max-w-6xl mx-auto p-6 bg-white shadow rounded-lg">
       <h1 className="text-3xl font-bold text-gray-800 mb-4">
         Test Case Generator
       </h1>
@@ -506,13 +474,13 @@ const TestCaseGenerator = () => {
           onClick={exportToWord}
           className="flex items-center bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
         >
-          <FileText className="w-4 h-4 mr-1" /> Export Word
+          <Download className="w-4 h-4 mr-1" /> Export Word
         </button>
         <button
           onClick={exportToExcel}
           className="flex items-center bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700"
         >
-          <FileSpreadsheet className="w-4 h-4 mr-1" /> Export CSV
+          <Download className="w-4 h-4 mr-1" /> Export CSV
         </button>
         <button
           onClick={exportToWebPage}
