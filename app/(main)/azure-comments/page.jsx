@@ -54,22 +54,24 @@ export default AzureComments;
 // Predefined comments array
 const comments = [
   `Hi @username
-  Completed testing for the new feature. Everything looks good!
-  No Issue found. Attached testing results for your reference.
-  Closing this QA task.
+Completed testing for this task. Everything looks good!
+No Issue found. Attached testing results for your reference.
+
+
+Closing this QA task.
   
-  Thanks,
-  Kundalik
+Thanks,
+Kundalik
   
-  FYI - @Ni @Rohan`,
-  `👉 Steps To Reproduce:
+FYI - @Ni @Rohan`,
+  `👉 Steps to Reproduce:
 1. Go to Scheme Level - 
 2.  
 3.  
 
-👉 Expected: Show proper error
+👉 Actual: Page reloads without any message.
 
-👉 Actual: Page reloads without any message.`,
+👉 Expected: Show proper error`,
   "Great work! 🚀",
   "Please add more details here.",
   "Can you provide an example?",
