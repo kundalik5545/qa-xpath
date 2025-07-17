@@ -12,6 +12,7 @@ import {
   Monitor,
   MessageCircle,
   GitCompare,
+  List,
 } from "lucide-react";
 
 import {
@@ -41,6 +42,11 @@ const items = [
     title: "Test Upload",
     url: "/test-generator-upload-file",
     icon: MessageCircle,
+  },
+  {
+    title: "To DO List",
+    url: "/simple-to-do-list",
+    icon: List,
   },
   { title: "Test Generator", url: "/test-generator", icon: CodeXml },
   {
