@@ -22,9 +22,11 @@ import ExampleFile from "./_components/Example";
 
 const TestReportGenerator = () => {
   const [testCases, setTestCases] = useState([]);
+  const [metaData, setMetaData] = useState([]);
   const [editingCase, setEditingCase] = useState(null);
   const [executionData, setExecutionData] = useState({});
   const [showEditModal, setShowEditModal] = useState(false);
+  const [includeDate, setIncludeDate] = useState(true);
   const fileInputRef = useRef(null);
   const screenshotInputRef = useRef(null);
 
@@ -62,7 +64,8 @@ const TestReportGenerator = () => {
     reader.onload = (e) => {
       const data = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, { type: "array" });
-      const sheetName = workbook.SheetNames[0];
+      //Sheet 01
+      const sheetName = workbook.SheetNames[1];
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
@@ -76,7 +79,25 @@ const TestReportGenerator = () => {
         status: "Not Executed",
       }));
 
+      //Sheet 02 - meta data
+      if (workbook.SheetNames.length < 2) {
+        console.error("Second sheet not found in the uploaded file.");
+        return;
+      }
+      const sheetName02 = workbook.SheetNames[0];
+      const worksheet02 = workbook.Sheets[sheetName02];
+      const jsonData02 = XLSX.utils.sheet_to_json(worksheet02);
+
+      const formattedData02 = jsonData02.map((row, index) => ({
+        id: index + 1,
+        taskId: row["Task ID"] || row["taskId"] || "",
+        taskName: row["Task Name"] || row["taskName"] || "",
+        taskURL: row["Task URL"] || row["taskURL"] || "",
+        testerName: row["Tester Name"] || row["testerName"] || "",
+      }));
+
       setTestCases(formattedData);
+      setMetaData(formattedData02);
     };
     reader.readAsArrayBuffer(file);
   };
@@ -86,7 +107,8 @@ const TestReportGenerator = () => {
       ...testCase,
       date: new Date().toISOString().split("T")[0],
       status: executionData[testCase.id]?.status || "Not Executed",
-      actualResult: executionData[testCase.id]?.actualResult || "",
+      actualResult:
+        executionData[testCase.id]?.actualResult || testCase.actualResult || "",
       screenshot: executionData[testCase.id]?.screenshot || null,
       notes: executionData[testCase.id]?.notes || "",
     });
@@ -109,6 +131,16 @@ const TestReportGenerator = () => {
     };
 
     setExecutionData(updatedExecutionData);
+
+    // Optional sync back to testCases list (for visible update without reload)
+    setTestCases((prev) =>
+      prev.map((tc) =>
+        tc.id === editingCase.id
+          ? { ...tc, actualResult: editingCase.actualResult }
+          : tc
+      )
+    );
+
     setShowEditModal(false);
     setEditingCase(null);
   };
@@ -174,20 +206,34 @@ const TestReportGenerator = () => {
   };
 
   const exportToExcel = () => {
+    // Format Test Case Data
     const reportData = testCases.map((tc) => ({
       "Test Case No": tc.testCaseNo,
       Location: tc.location,
       "Test Case Name": tc.testCaseName,
       "Expected Result": tc.expectedResult,
       "Actual Result": tc.actualResult,
-      Status: executionData[tc.id]?.status || "Not Executed",
       "Execution Date": executionData[tc.id]?.date || "",
+      Status: executionData[tc.id]?.status || "Not Executed",
       Notes: executionData[tc.id]?.notes || "",
     }));
 
-    const worksheet = XLSX.utils.json_to_sheet(reportData);
+    // Format Meta Data (manual 2-column row-per-field structure)
+    const meta = metaData[0] || {}; // assume metaData is array of 1 object
+    const metaSheetData = [
+      ["Task ID", meta.taskId || ""],
+      ["Task Name", meta.taskName || ""],
+      ["Task URL", meta.taskURL || ""],
+      ["Tester Name", meta.testerName || ""],
+    ];
+
+    const metaSheet = XLSX.utils.aoa_to_sheet(metaSheetData); // AOA = Array of Arrays
+    const reportSheet = XLSX.utils.json_to_sheet(reportData);
+
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Test Report");
+    XLSX.utils.book_append_sheet(workbook, metaSheet, "Meta Data");
+    XLSX.utils.book_append_sheet(workbook, reportSheet, "Test Report");
+
     XLSX.writeFile(
       workbook,
       `test-report-${new Date().toISOString().split("T")[0]}.xlsx`
@@ -314,11 +360,20 @@ const TestReportGenerator = () => {
       <div class="header">
         <h1>🧪 Test Execution Report</h1>
         <p class="align-left"><strong>Generated:</strong> ${
-          new Date().toISOString().split("T")[0]
+          includeDate ? new Date().toISOString().split("T")[0] : ""
         }</p>
+        <p class="align-left"><strong>Task ID:</strong> ${
+          metaData[0]?.taskId || ""
+        } </p>
+        <p class="align-left"><strong>Task Name:</strong> ${
+          metaData[0]?.taskName || ""
+        } </p>
+        <p class="align-left"><strong>Task URL:</strong> <a href="${
+          metaData[0]?.taskURL || ""
+        }">${metaData[0]?.taskURL || ""}</a></p>
         <hr />
       </div>
-
+     
       <div class="summary">
         <h2>Summary</h2>
         <p>Total Test Cases: ${testCases.length}</p>
@@ -347,18 +402,25 @@ const TestReportGenerator = () => {
           return `
             <div class="test-case">
               <h3>${tc.testCaseNo}: ${tc.testCaseName}</h3>
-              <p><strong>Status:</strong> <span class="${statusClass}">${
+              <p><strong>Status:</strong> 
+                <span class="${statusClass}">${
             execution?.status || "Not Executed"
-          }</span></p>
+          }</span>
+              </p>
               
               ${
-                execDate
+                includeDate && execDate
                   ? `<p><strong>Execution Date:</strong> ${execDate}</p>`
                   : ""
               }
               <p><strong>Location:</strong> ${tc.location}</p>
               <p><strong>Expected Result:</strong> ${tc.expectedResult}</p>
-              <p><strong>Actual Result:</strong> ${tc.actualResult}</p>
+              <p><strong>Actual:</strong> ${
+                execution?.actualResult
+                  ? execution.actualResult
+                  : tc.actualResult || "-"
+              }</p>
+
               
               ${
                 execution?.notes
@@ -379,6 +441,8 @@ const TestReportGenerator = () => {
   `;
     return reportHTML;
   };
+
+  console.log("Test Cases date:", includeDate);
 
   return (
     <div className="max-w-6xl mx-auto p-6 bg-white shadow rounded-lg">
@@ -418,16 +482,29 @@ const TestReportGenerator = () => {
       {/* Export Buttons */}
       {testCases.length > 0 && (
         <div className="mb-6 flex justify-end gap-4">
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor="include-date-checkbox"
+              className="text-sm text-gray-700 cursor-pointer select-none"
+            >
+              Date in Report
+            </label>
+            <input
+              id="include-date-checkbox"
+              type="checkbox"
+              checked={!!includeDate}
+              onChange={(e) => setIncludeDate(e.target.checked)}
+              className="accent-blue-600 w-4 h-4"
+            />
+          </div>
           <Button variant="secondary" onClick={exportToWord}>
             <FileText size={16} />
             Export to Word
           </Button>
-
           <Button variant="secondary" onClick={exportToExcel}>
             <FileSpreadsheet size={16} />
             Export to Excel
           </Button>
-
           <Button variant="secondary" onClick={exportToWebPage}>
             <Globe size={16} />
             Export to Web Page
@@ -525,7 +602,8 @@ const TestReportGenerator = () => {
                     <strong>Expected:</strong> {testCase.expectedResult}
                   </p>
                   <p>
-                    <strong>Actual:</strong>{" "}
+                    <strong>Actual:</strong>
+                    {"  "}
                     {execution?.actualResult || testCase.actualResult}
                   </p>
 

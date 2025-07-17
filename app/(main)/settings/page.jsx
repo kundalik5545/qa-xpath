@@ -50,14 +50,12 @@ const SettingsPage = () => {
               value={settings.appName}
               onChange={handleChange}
             />
-
             <Label>API URL</Label>
             <Input
               name="apiUrl"
               value={settings.apiUrl}
               onChange={handleChange}
             />
-
             <Label>Theme</Label>
             <select
               name="theme"
@@ -68,8 +66,24 @@ const SettingsPage = () => {
               <option value="light">Light</option>
               <option value="dark">Dark</option>
             </select>
-          </div>
 
+            {/* Date control */}
+            <div className="flex items-center gap-2 mt-2">
+              <input
+                type="checkbox"
+                id="showDate"
+                name="showDate"
+                checked={!!settings.showDate}
+                onChange={(e) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    showDate: e.target.checked,
+                  }))
+                }
+              />
+              <Label htmlFor="showDate">Show Date</Label>
+            </div>
+          </div>
           <div className="flex justify-end gap-2">
             <Button onClick={saveSettings}>Save Settings</Button>
           </div>
